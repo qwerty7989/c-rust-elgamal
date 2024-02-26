@@ -1,11 +1,11 @@
 #include "prime.h"
 
-int check_prime(unsigned long long n)
+int check_prime(int n)
 {
 	if (n <= 1)
 		return 0;
 
-	for (unsigned long long i = 2; i <= sqrt(n); i++)
+	for (int i = 2; i <= sqrt(n); i++)
 		if (n % i == 0)
 			return 0;
 

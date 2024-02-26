@@ -1,8 +1,8 @@
 #include "gcd.h"
 
-unsigned long long gcd(unsigned long long a, unsigned long long b)
+int gcd(int a, int b)
 {
-	unsigned long long temp;
+	int temp;
 	while (a != 0) {
 		temp = a;
 		a = b % a;
@@ -11,14 +11,33 @@ unsigned long long gcd(unsigned long long a, unsigned long long b)
 	return b;
 }
 
-int gcd_extended(unsigned long long a, unsigned long long b)
+int gcd_extended(int a, int p)
 {
-	while (b != 0) {
-		unsigned long long q = a / b;
-		unsigned long long r = a % b;
+	int s0, s1, t0, t1;
 
-		a = b;
-		b = r;
+	s0 = 1, s1 = 0;
+	t0 = 0, t1 = 1;
+
+	int tmp, q;
+	while (p != 0) {
+		q = a / p;
+
+		tmp = p;
+		p = a - q*tmp;
+		a = tmp;
+
+		tmp = s1;
+		s1 = s0 - q*tmp;
+		s0 = tmp;
+
+		tmp = t1;
+		t1 = t0 - q*tmp;
+		t0 = tmp;
 	}
-	return a == 1;
+
+	/**
+	 * https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Description
+	 * as + pt = gcd(a, p)
+	*/
+	return s0;
 }
