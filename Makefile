@@ -2,7 +2,7 @@ SRC=$(wildcard src/*.c)
 LIBS=-lm
 
 main: $(SRC)
-	gcc -I include -o $@ $^ $(LIBS)
+	gcc -I include -o crel $^ $(LIBS)
 
 clean:
-	rm -rf main
+	rm -rf crel

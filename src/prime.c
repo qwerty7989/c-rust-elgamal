@@ -3,12 +3,12 @@
 #include "modulo.h"
 #include "file_reader.h"
 
-int check_prime(unsigned long long n)
+int check_prime(long long n)
 {
 	if (n <= 1)
 		return 0;
 
-	for (unsigned long long i = 2; i <= sqrt(n); i++)
+	for (long long i = 2; i <= sqrt(n); i++)
 		if (n % i == 0)
 			return 0;
 
@@ -22,12 +22,12 @@ int check_prime(unsigned long long n)
  * 1/1606938044258990275541962092341162602522202993782792835301376
  * or 6/10^61 or 1 in quintillion quintillion.
 */
-int check_prime_lehnman(unsigned long long n, int t)
+int check_prime_lehnman(long long n, int t)
 {
 	if (n < 4)
 		return n == 2 || n == 3;
 
-	unsigned long long a, e, res, i;
+	long long a, e, res, i;
 
 	a = 2 + (rand() % (n-3));
 	e = (n-1) / 2;
@@ -44,7 +44,7 @@ int check_prime_lehnman(unsigned long long n, int t)
 	return 1;
 }
 
-unsigned long long gen_prime(int n, char *filename)
+long long gen_prime(int n, char *filename)
 {
 	int i, j, len;
 	int* data;
@@ -57,7 +57,7 @@ unsigned long long gen_prime(int n, char *filename)
 		i++;
 	}
 
-	unsigned long long res;
+	long long res;
 	res = data[i++];
 	for (j = i + len - 1; i < j; i++) {
 		res = res << 8;
@@ -69,18 +69,18 @@ unsigned long long gen_prime(int n, char *filename)
 		res = res + (data[i] >> (n % 8));
 	}
 
-	//while (!check_prime_lehnman(res, TEST_ROUND)) {
-	//	res += 1;
-	//}
+	while (!check_prime_lehnman(res, TEST_ROUND)) {
+		res += 1;
+	}
 
 	return res;
 }
 
-unsigned long long* gen_with_inverse(unsigned long long n)
+long long* gen_with_inverse(long long n)
 {
-	unsigned long long e, inv_e;
-	unsigned long long* res;
-	res = malloc(2*sizeof(unsigned long long));
+	long long e, inv_e;
+	long long* res;
+	res = malloc(2*sizeof(long long));
 
 	do {
 		e = rand();
