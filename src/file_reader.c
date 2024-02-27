@@ -20,7 +20,8 @@ int* read(char* filename)
 	do {
 		ch = fgetc(ptr);
 		data[i++] = ch;
-	} while (ch != EOF);
+	} while (ch != EOF && i < MAX_SIZE);
+	data[i] = EOF;
 
 	fclose(ptr);
 	return data;

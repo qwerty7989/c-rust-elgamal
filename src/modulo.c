@@ -29,3 +29,23 @@ long long power_modulo(long long b, long long e, long long n)
 
 	return c;
 }
+
+long long fast_power_modulo(long long b, long long e, long long n)
+{
+	long long res;
+	res = 1;
+
+	b = b % n;
+
+	if (b == 0) return 0;
+
+	while (e > 0) {
+		if (e & 1)
+			res = (res*b) % n;
+
+		e = e >> 1;
+		b = (b*b) % n;	
+	}
+
+	return res;
+}

@@ -16,12 +16,13 @@ int main(int argc, char* argv[])
 		printf("  -c [number1] [number2]\toutput gcd(number1, number2)\n");
 		printf("  -p [number]\t\t\toutput yes if number is prime, otherwise no\n");
 		printf("  -l [number] [tries]\t\toutput yes if number is probably prime, otherwise no\n");
+		printf("  -o <file>\t\t\tReading the file data, return data if readable\n");
 	}
 
 	switch(argv[1][1]) {
 		case 'g':
 			if (argc == 4) {
-				printf("%llu\n", gen_prime(atoi(argv[3]), argv[2]));
+				printf("%lld\n", gen_prime(atoi(argv[3]), argv[2]));
 			} else {
 				printf("  -g <file> [bits]\t\tgenerate prime number from file.\n");
 				printf("crel: Please enter both filename and bits\n");
@@ -31,6 +32,7 @@ int main(int argc, char* argv[])
 			if (argc == 3) {
 				long long* res = gen_with_inverse(atoi(argv[2]));
 				printf("e: %lld\ne^-1: %lld\n", res[0], res[1]);
+				free(res);
 			} else {
 				printf("  -r [number]\t\t\tgenerate random number with modulo inverse\n");
 				printf("crel: Please enter number\n");
@@ -76,25 +78,25 @@ int main(int argc, char* argv[])
 				printf("crel: Please enter both the number and tries\n");
 			}
 			break;
+		case 'o':
+			if (argc == 3) {
+				int* data = read(argv[2]);
+				for (int i = 0; data[i] != EOF; i++)
+					printf("%02x", data[i]);
+				printf("\n");
+				free(data);
+			} else {
+				printf("  -o <file>\t\t\tReading the file data, return data if readable\n");
+				printf("crel: Please enter filename\n");
+			}
+			break;
+
+		case 'd': // debug
+			break;
 		default:
 			printf("WAT\n");
 			break;
 	}
-
-	//a = atoi(argv[1]);
-	//b = atoi(argv[2]);
-	//printf("gcd(%d, %d): %d\n", a, b, gcd(a, b));
-	//printf("as + bt = gcd(a,b) | s = %d\n", gcd_extended(a, b));
-	//printf("inverse_modulo = %d\n", inverse_modulo(a, b));
-	//printf("power_module = %d\n", power_modulo(4, 13, 497));
-	//printf("check_prime(%d): %s\n", a, check_prime(a) ? "Yes": "No");
-	//printf("check_prime_lehnman(%d): %s\n", a, check_prime_lehnman(a, 100) ? "Yes": "No");
-	//printf("%s\n", read("src/main.c"));
-	//printf("read: %s\n", read("src/main.c"));
-	//long long* e_both = gen_with_inverse(rand());
-	//printf("gen_with_inverse: e=%d e^-1=%d\n", e_both[0], e_both[1]);
-
-
 
 	return 0;
 }
