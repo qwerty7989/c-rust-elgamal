@@ -1,8 +1,8 @@
 #include "gcd.h"
 
-int gcd(int a, int b)
+unsigned long long gcd(unsigned long long a, unsigned long long b)
 {
-	int temp;
+	unsigned long long temp;
 	while (a != 0) {
 		temp = a;
 		a = b % a;
@@ -11,14 +11,14 @@ int gcd(int a, int b)
 	return b;
 }
 
-int gcd_extended(int a, int p)
+unsigned long long gcd_extended(unsigned long long a, unsigned long long p)
 {
-	int s0, s1, t0, t1;
+	unsigned long long s0, s1, t0, t1;
 
 	s0 = 1, s1 = 0;
 	t0 = 0, t1 = 1;
 
-	int tmp, q;
+	unsigned long long tmp, q;
 	while (p != 0) {
 		q = a / p;
 

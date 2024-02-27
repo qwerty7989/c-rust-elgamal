@@ -1,6 +1,9 @@
 {
 	"files.associations": {
 		"stdio.h": "c",
-		"gcd.h": "c"
+		"gcd.h": "c",
+		"math.h": "c",
+		"file_reader.h": "c",
+		"modulo.h": "c"
 	}
 }

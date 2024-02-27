@@ -1,4 +1,4 @@
 #include <stdio.h>
 
-int gcd(int a, int b);
-int gcd_extended(int a, int b);
+unsigned long long gcd(unsigned long long a, unsigned long long b);
+unsigned long long gcd_extended(unsigned long long a, unsigned long long b);
