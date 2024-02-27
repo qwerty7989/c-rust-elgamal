@@ -27,12 +27,18 @@ int check_prime_lehnman(long long n, int t)
 	if (n < 4)
 		return n == 2 || n == 3;
 
+
 	long long a, e, res, i;
 
 	a = 2 + (rand() % (n-3));
 	e = (n-1) / 2;
+
 	while (t > 0) {
+		if (gcd(a, n) != 1)
+			return 0;
+
 		res = power_modulo(a, e, n);
+
 		if (res == 1 || res == n-1) {
 			a = 2 + (rand() % (n-3));
 			t--;
@@ -53,7 +59,7 @@ long long gen_prime(int n, char *filename)
 
 	len = n / 8;
 	i = 0;
-	while (data[i] < 128 & i < 30) {
+	while (data[i] < 128) {
 		i++;
 	}
 
