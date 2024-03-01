@@ -5,8 +5,6 @@
 
 int main(int argc, char* argv[])
 {
-	long long a, b;
-
 	if (argc == 1) {
 		printf("Usage: crel [OPTION] ...\n");
 		printf("  -g <file> [bits]\t\tgenerate prime number from file.\n");
@@ -22,7 +20,9 @@ int main(int argc, char* argv[])
 	switch(argv[1][1]) {
 		case 'g':
 			if (argc == 4) {
-				printf("%lld\n", gen_prime(atoi(argv[3]), argv[2]));
+				long long res = gen_prime(atoll(argv[3]), argv[2]);
+				if (res != -1)
+					printf("%lld\n", res);
 			} else {
 				printf("  -g <file> [bits]\t\tgenerate prime number from file.\n");
 				printf("crel: Please enter both filename and bits\n");
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 			break;
 		case 'r':
 			if (argc == 3) {
-				long long* res = gen_with_inverse(atoi(argv[2]));
+				long long* res = gen_with_inverse(atoll(argv[2]));
 				printf("e: %lld\ne^-1: %lld\n", res[0], res[1]);
 				free(res);
 			} else {
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 			break;
 		case 'i':
 			if (argc == 4) {
-				printf("%lld\n", inverse_modulo(atoi(argv[2]), atoi(argv[3])));
+				printf("%lld\n", inverse_modulo(atoll(argv[2]), atoll(argv[3])));
 			} else {
 				printf("  -i [remainder] [modulus]\toutput modulo inverse of input number\n");
 				printf("crel: Please enter both remainder and modulus\n");
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 			break;
 		case 'x':
 			if (argc == 5) {
-				printf("%lld\n", power_modulo(atoi(argv[2]), atoi(argv[3]), atoi(argv[4])));
+				printf("%lld\n", power_modulo(atoll(argv[2]), atoll(argv[3]), atoll(argv[4])));
 			} else {
 				printf("  -x [base] [expo] [modulus]\toutput modulo exponentiation of input number\n");
 				printf("crel: Please enter all the base, expo, and modulus\n");
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 			break;
 		case 'c':
 			if (argc == 4) {
-				printf("%lld\n", gcd(atoi(argv[2]), atoi(argv[3])));
+				printf("%lld\n", gcd(atoll(argv[2]), atoll(argv[3])));
 			} else {
 				printf("  -c [number1] [number2]\toutput gcd(number1, number2)\n");
 				printf("crel: Please enter both numbers\n");
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 			break;
 		case 'p':
 			if (argc == 3) {
-				printf("%lld is %s\n", atoi(argv[2]), check_prime(atoi(argv[2])) ? "prime": "not prime");
+				printf("%lld is %s\n", atoll(argv[2]), check_prime(atoll(argv[2])) ? "prime": "not prime");
 			} else {
 				printf("  -p [number]\t\t\toutput yes if number is prime, otherwise no\n");
 				printf("crel: Please enter both numbers\n");
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 			break;
 		case 'l':
 			if (argc == 4) {
-				printf("%lld is %s\n", atoi(argv[2]), check_prime_lehnman(atoi(argv[2]), atoi(argv[3])) ? "prime": "not prime");
+				printf("%lld is %s\n", atoll(argv[2]), check_prime_lehnman(atoi(argv[2]), atoi(argv[3])) ? "prime": "not prime");
 			} else {
 				printf("  -l [number] [tries]\t\toutput yes if number is probably prime, otherwise no\n");
 				printf("crel: Please enter both the number and tries\n");

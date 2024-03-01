@@ -1,51 +1,59 @@
 #include "modulo.h"
 #include "gcd.h"
 
-long long inverse_modulo(long long a, long long modulus)
+/**
+ * https://en.wikipedia.org/wiki/Modular_multiplicative_inverse#Extended_Euclidean_algorithm
+ * ax = 1 mod m
+*/
+long long inverse_modulo(long long a, long long m)
 {
-	long long s, r;
-	s = gcd_extended(a, modulus);
-	r = s % modulus;
+	long long x;
+	x = gcd_extended(a, m);
+	x = x % m;
 
-	while (r < 0)
-		r += modulus;
+	while (x < 0)
+		x += m;
 
-	return r;
+	return x;
 }
 
 /**
  * https://en.wikipedia.org/wiki/Modular_exponentiation#Memory-efficient_method
- * c = b^e mod n
+ * c = b^e mod m
 */
-long long power_modulo(long long b, long long e, long long n)
+long long power_modulo(long long b, long long e, long long m)
 {
-	if (n == 1)
+	if (m == 1)
 		return 0;
 
-	long long c, e_prime;
-	for (c = 1, e_prime = 0; e_prime < e; e_prime++) {
-		c = (c*b) % n;
+	long long c, i;
+	for (i = 0, c = 1; i < e; i++) {
+		c = (c*b) % m;
 	}
 
 	return c;
 }
 
-long long fast_power_modulo(long long b, long long e, long long n)
+/**
+ * https://en.wikipedia.org/wiki/Modular_exponentiation#Right-to-left_binary_method
+ * c = product of (b^a * 2^i) where i=[0,n-1]
+*/
+long long fast_power_modulo(long long b, long long e, long long m)
 {
-	long long res;
-	res = 1;
+	b = b % m;
+	if (b == 0)
+		return 0;
 
-	b = b % n;
+	long long c;
 
-	if (b == 0) return 0;
-
+	c = 1;
 	while (e > 0) {
 		if (e & 1)
-			res = (res*b) % n;
+			c = (c*b) % m;
 
 		e = e >> 1;
-		b = (b*b) % n;	
+		b = (b*b) % m;
 	}
 
-	return res;
+	return c;
 }
