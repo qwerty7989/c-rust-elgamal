@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-	if (argc == 1) {
+	if (argc == 1 || (argc > 1 && argv[1][0] != '-')) {
 		printf("Usage: crel [OPTION] ...\n");
 		printf("  -g <file> [bits]\t\tgenerate prime number from file.\n");
 		printf("  -r [number]\t\t\tgenerate random number with modulo inverse\n");
@@ -15,6 +15,7 @@ int main(int argc, char* argv[])
 		printf("  -p [number]\t\t\toutput yes if number is prime, otherwise no\n");
 		printf("  -l [number] [tries]\t\toutput yes if number is probably prime, otherwise no\n");
 		printf("  -o <file>\t\t\tReading the file data, return data if readable\n");
+		return 0;
 	}
 
 	switch(argv[1][1]) {

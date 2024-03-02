@@ -101,6 +101,8 @@ long long gen_prime(int n, char *filename)
 		res = (res << m) + (data[i] >> (BYTE_SIZE-m));
 	}
 
+	free(data);
+
 	if (!(res & 1))
 		res += 1;
 
@@ -108,7 +110,6 @@ long long gen_prime(int n, char *filename)
 		res += 2;
 	}
 
-	free(data);
 	return res;
 }
 
