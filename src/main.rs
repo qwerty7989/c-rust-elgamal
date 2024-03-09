@@ -5,11 +5,11 @@ mod test;
 use rand::Rng;
 
 fn main() {
-    let file = "./Cargo.lock";
+    let file = "./demo.png";
     util::show_head_file(file, 18);
     let bits = 126;
-    let lowerbound: i128 = 1<<(bits-1);
-    let upperbound: i128 = (1<<(bits-1)) + ((1<<(bits-1))-1);
+    let lowerbound : i128 = 1<<(bits-1);
+    let upperbound: i128 = (1<<bits) - 1;
     let prime = prime::gen_prime_from_file(bits, &file);
 
 
