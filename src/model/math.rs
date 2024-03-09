@@ -1,40 +1,4 @@
-
-/// Computes the modular multiplication of two integers (a * b) modulo m.
-///
-/// This function uses an optimized algorithm for modular multiplication that avoids 
-/// potential overflow issues that can occur when calculating large products.
-///
-/// # Arguments
-///
-/// * `a`: The first integer operand.
-/// * `b`: The second integer operand.
-/// * `m`: The modulus.
-///
-/// # Returns
-///
-/// The result of the modular multiplication (a * b) % m.
-///
-/// # Examples
-///
-/// ```
-/// let result = mul_mod(7, 5, 13);
-/// assert_eq!(result, 9);  // (7 * 5) % 13 = 35 % 13 = 9
-/// ```
-pub fn mul_mod( a: i128, b: i128, m: i128) -> i128{
-    let mut res: i128 = 0;
-    let mut x = a % m;
-    let mut y = b;
-    while y > 0 {
-        if y&1 == 1 {
-            res = modular(res + x, m)
-        }
-
-        x = modular(x * 2, m);
-        y /= 2;
-    }
-
-    return modular(res, m)
-}
+use num_bigint::{BigInt, Sign};
 
 /// Calculates the greatest common divisor (GCD) of two integers and the Bézout coefficients. 
 ///
@@ -61,15 +25,15 @@ pub fn mul_mod( a: i128, b: i128, m: i128) -> i128{
 /// assert_eq!(gcd, 12);
 /// assert_eq!(12, 36 * (-1) + 60 * 1); // Bézout's identity
 /// ```
-pub fn extended_gcd( n1: i128, n2: i128) -> (i128, i128) {
+pub fn extended_gcd(n1: &BigInt, n2: &BigInt) -> (BigInt, BigInt) {
     // gcd = xa+yb
-    if n2 == 0 {
-        return (1, 0);
+    if n2 == &BigInt::from(0) {
+        (BigInt::from(1), BigInt::from(0))
+    } else {
+        let (x, y) = extended_gcd(n2, &(n1 % n2));
+        let y_clone = y.clone();
+        (y, x - n1 / n2 * y_clone)
     }
-
-    let (mut  x, mut y) = extended_gcd(n2, n1%n2);
-    (x, y) = (y ,x -  n1/n2 * y );
-    return (x, y)
 }
 
 /// Calculates the modular exponentiation of a base 'a' raised to the power 'b' modulo 'n'.
@@ -94,16 +58,18 @@ pub fn extended_gcd( n1: i128, n2: i128) -> (i128, i128) {
 /// let result = fast_exponential(5, 3, 13);
 /// assert_eq!(result, 8); // (5 ^ 3) % 13 = 125 % 13 = 8 
 /// ```
-pub fn fast_exponential( a: i128, b: i128, n: i128 ) -> i128 {
-    if b == 1 { return modular(a, n) };
-    
-    if b%2 == 0 {
-        let x = fast_exponential(a, b/2, n);
-        return mul_mod(x,x,n)
-    }
-    else{
-        let x = fast_exponential(a, b-1, n);
-        return mul_mod(x,a,n)
+pub fn fast_exponential(a: &BigInt, b: &BigInt, m: &BigInt) -> BigInt {
+    if b == &BigInt::from(1) {
+        modular(&a, &m)
+    } else if modular(b, &BigInt::from(2)) == BigInt::from(0) {
+        let x = fast_exponential(&a, &(b / 2), &m);
+        let x_clone = x.clone();
+        modular(&(x_clone * x), &m)
+    } else {
+        let x = fast_exponential(&a, &(b - 1), &m);
+        let a_clone = a.clone();
+        let x_clone = x.clone();
+        modular(&(a_clone * x_clone), &m)
     }
 }
 /// Calculates the modular multiplicative inverse of an integer 'a' modulo 'p'.
@@ -130,10 +96,10 @@ pub fn fast_exponential( a: i128, b: i128, n: i128 ) -> i128 {
 /// let inverse = find_mod_invert(3, 11);
 /// assert_eq!(inverse, 4); // (3 * 4) % 11 = 1 
 /// ```
-pub fn find_mod_invert( a: i128, p: i128) -> i128 {
+pub fn find_mod_invert( a: &BigInt, p: &BigInt) -> BigInt {
     let (x,_y) = extended_gcd(a,p);
     
-    return modular(x, p);
+    return modular(&x, &p);
 }
 
 /// Calculates the greatest common divisor (GCD) of two integers.
@@ -156,11 +122,11 @@ pub fn find_mod_invert( a: i128, p: i128) -> i128 {
 /// let result = gcd(36, 60);
 /// assert_eq!(result, 12);
 /// ```
-pub fn gcd(a: i128, n: i128) -> i128 {
-    if n == 0 {
-        return a;
+pub fn gcd(a: &BigInt, n: &BigInt) -> BigInt {
+    if n == &BigInt::from(0) {
+        return a.clone();
     }
-    return gcd( n, a%n);
+    return gcd(n, &modular(&a, &n));
 }
 
 /// Calculates the modulo of an integer while ensuring the result is within the valid range.
@@ -180,14 +146,13 @@ pub fn gcd(a: i128, n: i128) -> i128 {
 /// # Examples
 ///
 /// ```
-/// let result = modular(-11, 5);
-/// assert_eq!(result, 4); 
+/// let result = modular(-5, 4);
+/// assert_eq!(result, 3); // (-5 % 4) = 3
 /// ```
-pub fn modular(number: i128, modular: i128) -> i128{
+pub fn modular(number: &BigInt, modular: &BigInt) -> BigInt {
     let result = number % modular;
-    if result < 0 {
-        result + modular
-    } else {
-        result
+    if result.sign() == Sign::Minus {
+        return result + modular;
     }
+    return result;
 }
