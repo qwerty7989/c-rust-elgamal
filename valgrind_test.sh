@@ -1,0 +1,1 @@
+valgrind --leak-check=full --show-leak-kinds=all ./crel -i 1 1239053

@@ -3,6 +3,8 @@
 #include "prime.h"
 #include "file_reader.h"
 
+#include "testing.h"
+
 int main(int argc, char* argv[])
 {
 	if (argc == 1 || (argc > 1 && argv[1][0] != '-')) {
@@ -92,7 +94,7 @@ int main(int argc, char* argv[])
 		}
 		break;
 
-	case 'd': // debug
+	case 't': // debug
 		break;
 	default:
 		printf("WAT\n");
