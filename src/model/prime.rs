@@ -148,15 +148,16 @@ fn read_n_bits_file(filename: &str, n: usize) -> BigInt{
 /// 
 /// A prime number generated from the bits in the file. 
 pub fn gen_prime_from_file(n: usize, filename: &str) -> BigInt {
-    let n:BigInt = read_n_bits_file(filename, n);
-    let mut cloned_n = n.clone(); // Clone the value of n
+    let mut num:BigInt = read_n_bits_file(filename, n);
+    num = num | BigInt::from(3); 
 
-    if n % BigInt::from(2) == BigInt::from(0) {
-        cloned_n = cloned_n + BigInt::from(1);
+    while !is_prime(&num) || !is_safe_prime(&num) {
+        num += BigInt::from(4);
     }
+    return num;
+}
 
-    while !is_prime(&cloned_n) {
-        cloned_n += BigInt::from(2);
-    }
-    return cloned_n;
+fn is_safe_prime(p: &BigInt) -> bool {
+    let q = (p - 1) / 2;
+    is_prime(&q) && is_prime(p)
 }
