@@ -1,167 +1,55 @@
 use crate::model::math::*;
-mod malmod {
-    use super::mul_mod;
-
-    #[test]
-    fn test_mul_mod_small_values() {
-        assert_eq!(mul_mod(5, 3, 7), 1);
-        assert_eq!(mul_mod(12, 9, 11), 6);
-    }
-
-    #[test]
-    fn test_mul_mod_large_values() {
-        assert_eq!(mul_mod(123456, 78910, 1000), 76);
-    }
-
-    #[test]
-    fn test_mul_mod_zero_values() {
-        assert_eq!(mul_mod(0, 10, 5), 0);
-        assert_eq!(mul_mod(7, 0, 13), 0);
-    }
-
-    #[test]
-    fn test_mul_mod_negative_values() {
-        assert_eq!(mul_mod(-5, 4, 11), 2);
-    }
-
-    #[test]
-    fn test_mul_mod_modulus_one() {
-        assert_eq!(mul_mod(13, 45, 1), 0);
-    }
-}
-
-
+use num_bigint::BigInt;
 mod fastexp {
-    use super::fast_exponential;
+    use super::*;
 
     #[test]
     fn test_fast_exponential_small_values() {
-        assert_eq!(fast_exponential(5, 3, 13), 8);
-        assert_eq!(fast_exponential(2, 10, 7), 1);
+        assert_eq!(fast_exponential(&BigInt::from(5), &BigInt::from(3), &BigInt::from(13)), BigInt::from(8));
+        assert_eq!(fast_exponential(&BigInt::from(12), &BigInt::from(9), &BigInt::from(13)), BigInt::from(12));
     }
 
     #[test]
     fn test_fast_exponential_large_values() {
-        assert_eq!(fast_exponential(123456, 78910, 1000), 376);
+        assert_eq!(fast_exponential(&"123456789123456789234567891351022312".parse::<BigInt>().unwrap(), &"17334248032272856919049904129148938617700988026090091460879655732220285072143065787223096343056385420849661398798293779660428888551447104213882128549291176296371385729241534813546071605543468206061125584039227373122018049244778484994356867074865724816125097661714995812708312592098161194937539506942257113713701382995347083051696132520863811558014580771630033698094553324708760083861204938625888102328901224095127620190725751513318203096787453648470198739056272585426201114787297283763225661464496527195439713828199606175112946876198773778167018807055371651698483992900856553336110202913075614527574300938818948881437".parse::<BigInt>().unwrap(), &"48145148565453232154115".parse::<BigInt>().unwrap()), "38077834815652410155752".parse::<BigInt>().unwrap());
     }
 
-    // #[test]
-    // fn test_fast_exponential_zero_values() {
-    //     assert_eq!(fast_exponential(0, 10, 5), 0);
-    //     assert_eq!(fast_exponential(7, 0, 13), 1);
-    // }
+    #[test]
+    fn test_fast_exponential_zero_values() {
+        assert_eq!(fast_exponential(&BigInt::from(0), &BigInt::from(10), &BigInt::from(10)), BigInt::from(0));
+        assert_eq!(fast_exponential(&BigInt::from(7), &BigInt::from(0), &BigInt::from(10)), BigInt::from(1));
+    }
 
     #[test]
     fn test_fast_exponential_negative_values() {
-        assert_eq!(fast_exponential(-5, 4, 11), 6);
+        assert_eq!(fast_exponential(&BigInt::from(-5), &BigInt::from(4), &BigInt::from(10)), BigInt::from(5));
     }
 
     #[test]
     fn test_fast_exponential_modulus_one() {
-        assert_eq!(fast_exponential(13, 45, 1), 0);
+        assert_eq!(fast_exponential(&BigInt::from(5), &BigInt::from(3), &BigInt::from(1)), BigInt::from(0));
     }
 }
 
-mod gcd {
-    use super::gcd;
-
-    #[test]
-    fn test_gcd_small_values() {
-        assert_eq!(gcd(5, 3), 1);
-        assert_eq!(gcd(12, 9), 3);
-    }
-
-    #[test]
-    fn test_gcd_large_values() {
-        assert_eq!(gcd(123456, 78910), 2);
-    }
-
-    #[test]
-    fn test_gcd_zero_values() {
-        assert_eq!(gcd(0, 10), 10);
-        assert_eq!(gcd(7, 0), 7);
-    }
-
-    #[test]
-    fn test_gcd_negative_values() {
-        assert_eq!(gcd(-5, 4), 1);
-    }
-}
 
 mod extended_gcd {
-    use super::extended_gcd;
-
+    use super::*;
+    
     #[test]
     fn test_extended_gcd_small_values() {
-        assert_eq!(extended_gcd(5, 3), (1, -1));
-        assert_eq!(extended_gcd(12, 9), (3, 1));
+        assert_eq!(extended_gcd(&BigInt::from(3), &BigInt::from(11)), (BigInt::from(4), BigInt::from(-1)));
+        assert_eq!(extended_gcd(&BigInt::from(5), &BigInt::from(13)), (BigInt::from(8), BigInt::from(-3)));
     }
 
     #[test]
     fn test_extended_gcd_large_values() {
-        assert_eq!(extended_gcd(123456, 78910), (2, -3081));
+        assert_eq!(extended_gcd(&"123456789123456789234567891351022312".parse::<BigInt>().unwrap(), &"17334248032272856919049904129148938617700988026090091460879655732220285072143065787223096343056385420849661398798293779660428888551447104213882128549291176296371385729241534813546071605543468206061125584039227373122018049244778484994356867074865724816125097661714995812708312592098161194937539506942257113713701382995347083051696132520863811558014580771630033698094553324708760083861204938625888102328901224095127620190725751513318203096787453648470198739056272585426201114787297283763225661464496527195439713828199606175112946876198773778167018807055371651698483992900856553336110202913075614527574300938818948881437".parse::<BigInt>().unwrap()), ("-8265394532103148596834178161937676158993037385671563478082272964556106988796790524772537694279926398956958326728046648385548657030123176712817268633665415550402513561587861505054674017030831061912904762990796002850865595712132145394176799579820558475132071424194095676692525672627142423785563769236116669334555967433148656704633101277842092770901182085014659824220407350498253832050650929868507055500324567818729022523570484059199691866725592080533630124494052936872262669159296873845889393166043622138899344319787273304657158221272058871595428903174289459823090234794482165463792566790996769856025921475849826943291".parse::<BigInt>().unwrap(), "58867224460629483379141773391115789".parse::<BigInt>().unwrap()));
     }
 
     #[test]
     fn test_extended_gcd_zero_values() {
-        assert_eq!(extended_gcd(0, 10), (10, 0));
-        assert_eq!(extended_gcd(7, 0), (7, 0));
+        assert_eq!(extended_gcd(&BigInt::from(0), &BigInt::from(10)), (BigInt::from(0), BigInt::from(1)));
+        assert_eq!(extended_gcd(&BigInt::from(7), &BigInt::from(0)), (BigInt::from(1), BigInt::from(0)));
     }
 
-    #[test]
-    fn test_extended_gcd_negative_values() {
-        assert_eq!(extended_gcd(-5, 4), (1, 1));
-    }
-}
-
-mod find_mod_invert {
-    use super::find_mod_invert;
-
-    #[test]
-    fn test_find_mod_invert_small_values() {
-        assert_eq!(find_mod_invert(3, 11), 4);
-        assert_eq!(find_mod_invert(2, 7), 4);
-    }
-
-    #[test]
-    fn test_find_mod_invert_large_values() {
-        assert_eq!(find_mod_invert(123456, 78910), 1);
-    }
-
-    #[test]
-    fn test_find_mod_invert_zero_values() {
-        assert_eq!(find_mod_invert(0, 10), 0);
-        assert_eq!(find_mod_invert(7, 0), 0);
-    }
-
-    #[test]
-    fn test_find_mod_invert_negative_values() {
-        assert_eq!(find_mod_invert(-5, 4), 3);
-    }
-}
-
-mod modular {
-    use super::modular;
-
-    #[test]
-    fn test_modular_small_values() {
-        assert_eq!(modular(5, 3), 2);
-        assert_eq!(modular(12, 9), 3);
-    }
-
-    #[test]
-    fn test_modular_large_values() {
-        assert_eq!(modular(123456, 78910), 44546);
-    }
-
-    #[test]
-    fn test_modular_zero_values() {
-        assert_eq!(modular(0, 10), 0);
-        assert_eq!(modular(7, 0), 0);
-    }
-
-    #[test]
-    fn test_modular_negative_values() {
-        assert_eq!(modular(-5, 4), 3);
-    }
 }

@@ -59,6 +59,9 @@ pub fn extended_gcd(n1: &BigInt, n2: &BigInt) -> (BigInt, BigInt) {
 /// assert_eq!(result, 8); // (5 ^ 3) % 13 = 125 % 13 = 8 
 /// ```
 pub fn fast_exponential(a: &BigInt, b: &BigInt, m: &BigInt) -> BigInt {
+    if b == &BigInt::from(0) {
+        return BigInt::from(1);
+    }
     if b == &BigInt::from(1) {
         modular(&a, &m)
     } else if modular(b, &BigInt::from(2)) == BigInt::from(0) {

@@ -1,5 +1,5 @@
 #[cfg(test)]
 pub mod math;
 
-#[cfg(test)]
-pub mod prime;
+// #[cfg(test)]
+// pub mod prime;

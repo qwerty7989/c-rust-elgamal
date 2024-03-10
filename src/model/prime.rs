@@ -1,5 +1,5 @@
 use super::*;
-use rand::Rng;
+
 use std::fs::File;
 use std::io::Read;
 use num_bigint::{BigInt, RandBigInt};
@@ -106,23 +106,24 @@ pub fn is_prime(n: &BigInt) -> bool {
 /// An integer (`BigInt`) representing the first 'n' bits read from the file. 
 
 fn read_n_bits_file(filename: &str, n: usize) -> BigInt{
-    let mut file = File::open(filename).unwrap();
+    let mut file: File = File::open(filename).unwrap();
     let mut binary_string: Vec<char> = Vec::new();
-    let mut shift_count: u8 = 0;
+    let mut shift_count: usize = 0;
     let mut buffer = vec![0u8; 1];
     while binary_string.len() < n || binary_string[binary_string.len() - n] == '0' {
         if shift_count % 8 == 0 {
             file.read_exact(&mut buffer).unwrap();
-            shift_count = 0;
         }
         let bit_shift = (buffer[0] & 0x80) >> 7;
         buffer[0] = buffer[0] << 1;
         binary_string.push((bit_shift + 48) as char);
         shift_count += 1;
     }
-    let mut result = BigInt::from(0);
+    let base_index = (shift_count - n) as usize;
+    let mut result: BigInt = BigInt::from(0);
     for i in 0..n {
-        if binary_string[i] == '1' {
+        let index = base_index + i; // start from the least significant bit
+        if binary_string[index] == '1' {
             result = result | (BigInt::from(1) << (n - i - 1));
         }
     }
