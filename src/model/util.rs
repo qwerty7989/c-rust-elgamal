@@ -1,6 +1,3 @@
-use std::fs::File;
-use std::io::Read;
-
 use num_bigint::BigInt;
 
 /// Sets all bits of a binary string to 1.
