@@ -21,7 +21,6 @@ int* read(char* filename)
 		ch = fgetc(ptr);
 		data[i++] = ch;
 	} while (ch != EOF && i < MAX_SIZE);
-	data[i] = EOF;
 
 	fclose(ptr);
 	return data;

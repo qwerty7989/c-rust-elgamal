@@ -115,18 +115,27 @@ int gen_prime(int n, char *filename, mpz_t res)
 	}
 
 	// Convert data byte to bit
-	int k, len, m, q;
+	int k, len, m, q, flag;
 
 	k = BYTE_SIZE;
 	while ((data[i] & (1 << (k-1))) == 0) {
 		k--;
 	}
 
-	mpz_set_ui(res, data[i++]);
+	flag = 0;
+	mpz_set_si(res, data[i++]);
 	for (len = i + (n/BYTE_SIZE) - 1; i < len; i++) {
 		mpz_mul_2exp(res, res, BYTE_SIZE); // left shift
-		mpz_add_ui(res, res, data[i]);
+		if (flag || data[i] == EOF) {
+			flag = 1;
+			mpz_add_ui(res, res, 0);
+		} else {
+			mpz_add_ui(res, res, data[i]);
+		}
 	}
+
+	if (flag || data[i] == EOF)
+		data[i] = 0;
 
 	if (n < BYTE_SIZE) {
 		m = abs(n-k);
