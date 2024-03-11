@@ -1,5 +1,5 @@
 #include <stdio.h>
+#include <gmp.h>
 
-long long inverse_modulo(long long a, long long p);
-long long power_modulo(long long b, long long e, long long n);
-long long fast_power_modulo(long long b, long long e, long long n);
+void inverse_modulo(mpz_t a, mpz_t m, mpz_t x);
+void fast_power_modulo(mpz_t b, mpz_t e, mpz_t m, mpz_t x);

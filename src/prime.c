@@ -3,18 +3,6 @@
 #include "modulo.h"
 #include "file_reader.h"
 
-int check_prime(long long n)
-{
-	if (n <= 1)
-		return 0;
-
-	for (long long i = 2; i <= sqrt(n); i++)
-		if (n % i == 0)
-			return 0;
-
-	return 1;
-}
-
 /**
  * https://www.youtube.com/watch?v=zmhUlVck3J0
  * Doing this 100 times, the likely chance that we are wrong about
@@ -22,31 +10,77 @@ int check_prime(long long n)
  * 1/1606938044258990275541962092341162602522202993782792835301376
  * or 6/10^61 or 1 in quintillion quintillion.
 */
-int check_prime_lehnman(long long n, int k)
+int check_prime_lehnman(mpz_t n, int t)
 {
-	if (n < 4)
-		return n == 2 || n == 3;
+	if (mpz_cmp_si(n, 4) < 0)
+		return mpz_cmp_si(n, 2) == 0 || mpz_cmp_si(n, 3) == 0;
 
-	if (n % 2 == 0 || n % 3 == 0)
+	if (mpz_divisible_ui_p(n, 2) || mpz_divisible_ui_p(n, 3))
 		return 0;
 
-	long long a, e, x;
+	mpz_t a, e, x, tmp_a, tmp_e, tmp_n;
+	gmp_randstate_t rstate;
+	gmp_randinit_mt(rstate);
+	gmp_randseed_ui(rstate, rand());
 
-	a = 2 + (rand()%(n-3));
-	e = (n-1) / 2;
-	while (k > 0) {
-		if (gcd(a, n) != 1)
+	mpz_init(a);
+	mpz_init(e);
+	mpz_init(x);
+	mpz_init(tmp_a);
+	mpz_init(tmp_e);
+	mpz_init(tmp_n);
+
+	//// a = 2 + (rand()%(n-3));
+	mpz_urandomm(a, rstate, n);
+	mpz_sub_ui(tmp_n, n, 3);
+	mpz_mod(a, a, tmp_n);
+	mpz_add_ui(a, a, 2);
+
+	//// e = (n-1) / 2;
+	mpz_sub_ui(tmp_n, n, 1);
+	mpz_tdiv_q_2exp(e, tmp_n, 1);
+
+	while (t > 0) {
+		mpz_set(tmp_a, a);
+		mpz_set(tmp_e, e);
+		mpz_set(tmp_n, n);
+
+		gcd(tmp_a, tmp_n);
+		if (mpz_cmp_si(tmp_n, 1) != 0) // gcd(a,n) != 1
 			return 0;
 
-		x = fast_power_modulo(a, e, n);
+		mpz_set(tmp_a, a);
+		mpz_set(tmp_n, n);
+		fast_power_modulo(tmp_a, tmp_e, tmp_n, x);
 
-		if (x == 1 || x == n-1) {
-			a = 2 + (rand()%(n-3));
-			k--;
+		mpz_sub_ui(tmp_n, n, 1);
+		if (mpz_cmp_si(x, 1) == 0 || mpz_cmp(x, tmp_n) == 0) {
+			// a = 2 + (rand()%(n-3));
+			mpz_urandomm(a, rstate, n);
+			mpz_sub_ui(tmp_n, n, 3);
+			mpz_mod(a, a, tmp_n);
+			mpz_add_ui(a, a, 2);
+			t--;
 		} else {
+			// free variable from memory
+			mpz_clear(a);
+			mpz_clear(e);
+			mpz_clear(x);
+			mpz_clear(tmp_a);
+			mpz_clear(tmp_e);
+			mpz_clear(tmp_n);
+
 			return 0;
 		}
 	}
+
+	// free variable from memory
+	mpz_clear(a);
+	mpz_clear(e);
+	mpz_clear(x);
+	mpz_clear(tmp_a);
+	mpz_clear(tmp_e);
+	mpz_clear(tmp_n);
 
 	return 1;
 }
@@ -61,8 +95,9 @@ int check_prime_lehnman(long long n, int k)
  *	01100100, first bit found at 7th, want 19 bits number.
 			19 % 8 == 3, so fill the missing bit by 3+1=4
 */
-long long gen_prime(int n, char *filename)
+int gen_prime(int n, char *filename, mpz_t res)
 {
+	// Read and check for non-zero data byte
 	int i;
 	int* data;
 
@@ -76,55 +111,78 @@ long long gen_prime(int n, char *filename)
 
 	if (data[i] == EOF) {
 		printf("crel: Not able to find suitable bit to generate prime (file size too small or no data in file)\n");
-		return -1;
+		return 0;
 	}
 
-	int k, len, m;
-	long long res;
+	// Convert data byte to bit
+	int k, len, m, q;
 
 	k = BYTE_SIZE;
 	while ((data[i] & (1 << (k-1))) == 0) {
 		k--;
 	}
 
-	res = data[i++];
+	mpz_set_ui(res, data[i++]);
 	for (len = i + (n/BYTE_SIZE) - 1; i < len; i++) {
-		res = res << BYTE_SIZE;
-		res = res + data[i];
+		mpz_mul_2exp(res, res, BYTE_SIZE); // left shift
+		mpz_add_ui(res, res, data[i]);
 	}
 
 	if (n < BYTE_SIZE) {
 		m = abs(n-k);
-		res = (k < n) ? (res<<m)+(data[i]>>(BYTE_SIZE-m)) : (res>>m);
+		if (k < n) {
+			mpz_mul_2exp(res, res, m);
+			q = data[i] >> (BYTE_SIZE-m);
+			mpz_add_ui(res, res, q);
+		} else {
+			mpz_tdiv_q_2exp(res, res, m); // right shift
+		}
 	} else {
 		m = (BYTE_SIZE-k) + (n%BYTE_SIZE);
-		res = (res << m) + (data[i] >> (BYTE_SIZE-m));
+		mpz_mul_2exp(res, res, m);
+		q = data[i] >> (BYTE_SIZE-m);
+		mpz_add_ui(res, res, q);
 	}
 
 	free(data);
 
-	if (!(res & 1))
-		res += 1;
+	// Find closest probable prime
+	if (mpz_even_p(res))
+		mpz_add_ui(res ,res, 1);
 
 	while (!check_prime_lehnman(res, TEST_ROUND)) {
-		res += 2;
+		mpz_add_ui(res ,res, 2);
 	}
 
-	return res;
+	return 1; // return res
 }
 
-long long* gen_with_inverse(long long n)
+void gen_with_inverse(mpz_t n, mpz_t e, mpz_t inv_e)
 {
-	long long e, inv_e;
-	long long* res;
-	res = malloc(2*sizeof(long long));
+	mpz_t tmp_e, tmp_n;
+
+	mpz_inits(tmp_e, tmp_n, NULL);
+
+	mpz_set(tmp_e, e);
+	mpz_set(tmp_n, n);
+
+	gmp_randstate_t rstate;
+	gmp_randinit_mt(rstate);
+	gmp_randseed_ui(rstate, rand());
 
 	do {
-		e = rand();
-	} while (gcd(e, n) != 1);
+		mpz_urandomm(e, rstate, n);
 
-	inv_e = inverse_modulo(e, n);
+		mpz_set(tmp_e, e);
+		mpz_set(tmp_n, n);
+		gcd(tmp_e, tmp_n);
+	} while (mpz_cmp_si(tmp_n, 1) != 0);
 
-	res[0] = e, res[1] = inv_e;
-	return res;
+	mpz_set(tmp_e, e);
+	mpz_set(tmp_n, n);
+	inverse_modulo(tmp_e, tmp_n, inv_e);
+
+	mpz_clears(tmp_e, tmp_n, rstate, NULL);
+
+	// return res;
 }

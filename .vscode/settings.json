@@ -4,6 +4,7 @@
 		"gcd.h": "c",
 		"math.h": "c",
 		"file_reader.h": "c",
-		"modulo.h": "c"
+		"modulo.h": "c",
+		"gmp.h": "c"
 	}
 }

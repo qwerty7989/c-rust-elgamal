@@ -5,55 +5,48 @@
  * https://en.wikipedia.org/wiki/Modular_multiplicative_inverse#Extended_Euclidean_algorithm
  * ax = 1 mod m
 */
-long long inverse_modulo(long long a, long long m)
+void inverse_modulo(mpz_t a, mpz_t m, mpz_t x)
 {
-	long long x;
-	x = gcd_extended(a, m);
-	x = x % m;
+	mpz_t tmp_m;
 
-	while (x < 0)
-		x += m;
+	mpz_init(tmp_m);
+	mpz_set(tmp_m, m);
 
-	return x;
-}
+	gcd_extended(a, tmp_m, x);
+	mpz_mod(x, x, m); // x = x % m;
 
-/**
- * https://en.wikipedia.org/wiki/Modular_exponentiation#Memory-efficient_method
- * c = b^e mod m
-*/
-long long power_modulo(long long b, long long e, long long m)
-{
-	if (m == 1)
-		return 0;
+	while (mpz_cmp_si(x, 0) < 0)
+		mpz_add(x, x, m); // x = x + m;
 
-	long long c, i;
-	for (i = 0, c = 1; i < e; i++) {
-		c = (c*b) % m;
-	}
+	mpz_clear(tmp_m);
 
-	return c;
+	// return x;
 }
 
 /**
  * https://en.wikipedia.org/wiki/Modular_exponentiation#Right-to-left_binary_method
  * c = product of (b^a * 2^i) where i=[0,n-1]
 */
-long long fast_power_modulo(long long b, long long e, long long m)
+void fast_power_modulo(mpz_t b, mpz_t e, mpz_t m, mpz_t x)
 {
-	b = b % m;
-	if (b == 0)
-		return 0;
-
-	long long c;
-
-	c = 1;
-	while (e > 0) {
-		if (e & 1)
-			c = (c*b) % m;
-
-		e = e >> 1;
-		b = (b*b) % m;
+	mpz_mod(b, b, m);
+	if (mpz_cmp_si(b, 0) == 0) {
+		mpz_set_ui(x, 0);
+		return;
 	}
 
-	return c;
+	mpz_set_ui(x, 1);
+	while (mpz_cmp_si(e, 0) > 0) {
+		if (mpz_odd_p(e)) {
+			// c = (c*b) % m;
+			mpz_mul(x, x, b);
+			mpz_mod(x ,x ,m);
+		}
+
+		mpz_tdiv_q_2exp(e, e, 1); // right shift
+		mpz_mul(b, b, b);
+		mpz_mod(b ,b ,m);
+	}
+
+	// return c;
 }
