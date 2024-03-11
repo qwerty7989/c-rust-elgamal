@@ -23,12 +23,7 @@ int check_prime_lehnman(mpz_t n, int t)
 	gmp_randinit_mt(rstate);
 	gmp_randseed_ui(rstate, rand());
 
-	mpz_init(a);
-	mpz_init(e);
-	mpz_init(x);
-	mpz_init(tmp_a);
-	mpz_init(tmp_e);
-	mpz_init(tmp_n);
+	mpz_inits(a, e, x, tmp_a, tmp_e, tmp_n, NULL);
 
 	//// a = 2 + (rand()%(n-3));
 	mpz_urandomm(a, rstate, n);
@@ -63,24 +58,14 @@ int check_prime_lehnman(mpz_t n, int t)
 			t--;
 		} else {
 			// free variable from memory
-			mpz_clear(a);
-			mpz_clear(e);
-			mpz_clear(x);
-			mpz_clear(tmp_a);
-			mpz_clear(tmp_e);
-			mpz_clear(tmp_n);
+			mpz_clears(a, e, x, tmp_a, tmp_e, tmp_n, NULL);
 
 			return 0;
 		}
 	}
 
 	// free variable from memory
-	mpz_clear(a);
-	mpz_clear(e);
-	mpz_clear(x);
-	mpz_clear(tmp_a);
-	mpz_clear(tmp_e);
-	mpz_clear(tmp_n);
+	mpz_clears(a, e, x, tmp_a, tmp_e, tmp_n, NULL);
 
 	return 1;
 }

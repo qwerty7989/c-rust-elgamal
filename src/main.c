@@ -127,6 +127,7 @@ int main(int argc, char* argv[])
 		}
 		break;
 	default:
+		printf("crel: invalid option\n");
 		break;
 	}
 
