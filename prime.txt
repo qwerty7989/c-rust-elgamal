@@ -1,0 +1,6 @@
+public key:
+  p=2819
+  g=246
+  y=825
+private key:
+  u=645

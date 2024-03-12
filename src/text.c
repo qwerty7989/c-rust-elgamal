@@ -73,33 +73,55 @@ void combined_public_string(char* str, mpz_t n, mpz_t g, mpz_t y)
     free(tmp);
 }
 
-void decombined_public_string(char* str, char* key_size_bit, mpz_t n, mpz_t g, mpz_t y)
+
+void decombined_private_string(char* str, long int key_size_bit, mpz_t n, mpz_t u)
 {
-    int i;
-	long unsigned int ksb = strtol(key_size_bit, NULL, 10);
-    printf("%d\n", key_size_bit);
-	//char* tmp = malloc((key_size_bit+2)*sizeof(char));
+    int i, j;
+	char* tmp = malloc((key_size_bit+2)*sizeof(char));
 
-    //strcpy(str,"");
+    strcpy(tmp,"");
 
-	//mpz_get_str(tmp, 2, n);
-    //strcat(str, tmp);
+    for (i = 0; i < key_size_bit; i++) {
+        tmp[i] = str[i];
+    }
+    tmp[i] = '\0';
+    mpz_set_str(n, tmp, 2);
 
-    //mpz_get_str(tmp, 2, g);
-	//for (i = 0; i < key_size_bit-strlen(tmp); i++) {
-	//	str[key_size_bit+i] = '0';
-	//}
-    //str[key_size_bit+i] = '\0';
-    //strcat(str, tmp);
+    for (j = 0; j < key_size_bit; j++, i++) {
+        tmp[j] = str[i];
+    }
+    tmp[j] = '\0';
+    mpz_set_str(u, tmp, 2);
 
-    //mpz_get_str(tmp, 2, y);
-	//for (i = 0; i < key_size_bit-strlen(tmp); i++) {
-	//	str[(key_size_bit*2)+i] = '0';
-	//}
-    //str[(key_size_bit*2)+i] = '\0';
-    //strcat(str, tmp);
+    free(tmp);
+}
 
-    //free(tmp);
+void decombined_public_string(char* str, long int key_size_bit, mpz_t n, mpz_t g, mpz_t y)
+{
+    int i, j;
+	char* tmp = malloc((key_size_bit+2)*sizeof(char));
+
+    strcpy(tmp,"");
+
+    for (i = 0; i < key_size_bit; i++) {
+        tmp[i] = str[i];
+    }
+    tmp[i] = '\0';
+    mpz_set_str(n, tmp, 2);
+
+    for (j = 0; j < key_size_bit; j++, i++) {
+        tmp[j] = str[i];
+    }
+    tmp[j] = '\0';
+    mpz_set_str(g, tmp, 2);
+
+    for (j = 0; j < key_size_bit; j++, i++) {
+        tmp[j] = str[i];
+    }
+    tmp[j] = '\0';
+    mpz_set_str(y, tmp, 2);
+
+    free(tmp);
 }
 
 /**

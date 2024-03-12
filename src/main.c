@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
 			sprintf(pub_str, "%lu", key_size_bit);
 			strcat(pub_str, " ");
 			strcat(pub_str, res_pub);
-			write(argv[3], pub_str, strlen(pub_str));
+			write_char(argv[3], pub_str, strlen(pub_str));
 
 			//u
 			combined_private_string(res_pri, n, u);
@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 			sprintf(pri_str, "%lu", key_size_bit);
 			strcat(pri_str, " ");
 			strcat(pri_str, res_pri);
-			write(argv[4], pri_str, strlen(pri_str));
+			write_char(argv[4], pri_str, strlen(pri_str));
 
 			free(res_pub);
 			free(res_pri);
@@ -230,32 +230,35 @@ int main(int argc, char* argv[])
 	case 'a':
 		if (argc == 4) {
 			int i, j;
-			mpz_t x, g, y, k;
-			mpz_inits(x, g, y, k, NULL);
+			mpz_t n, x, g, y, a, b;
+			mpz_inits(n, x, g, y, a, b, NULL);
+
+			mpz_set_str(x, argv[3], 10);
 
 			char* data = read_char(argv[2]);
-			char* key_size_bit = malloc(MAX_SIZE*sizeof(char));
+			char* base64_data;
+			long int key_size_bit;
+
+			key_size_bit = strtol(data, &base64_data, 10);
 
 			i = 0;
-			while (!isspace(data[i])) {
-				key_size_bit[i] = data[i];
-				i++;
+			j = 1;
+			while (base64_data[j] != '\0') {
+				base64_data[i++] = base64_data[j++];
 			}
-			key_size_bit[i++] = '\0';
+			base64_data[i] = '\0';
 
-			j = 0;
-			while (data[i] != '\0') {
-				data[j++] = data[i++];
-			}
-			data[j] = '\0';
+			base64_decoder(base64_data, strlen(base64_data));
+			integer_string_to_binary_string(base64_data);
+			decombined_public_string(base64_data, key_size_bit, n, g, y);
 
-			base64_decoder(data, strlen(data));
+			elgamal_encrypt_number(n, g, y, a, b, x);
 
-			integer_string_to_binary_string(data);
-			printf("key %s data %s\n", key_size_bit, data);
-			decombined_public_string(data, key_size_bit, g, y, k);
+			gmp_printf("a=%Zd\nb=%Zd\n", a, b);
 
-			//mpz_set_str(x, argv[3], 10);
+			free(data);
+
+			mpz_clears(n, x, g, y, a, b, NULL);
 
 		} else if (argc == 6) {
 			mpz_t n, g, y, a, b, x;
@@ -280,7 +283,37 @@ int main(int argc, char* argv[])
 		break;
 	case 'b':
 		if (argc == 5) {
+			int i, j;
+			mpz_t n, x, u, a, b;
+			mpz_inits(n, x, u, a, b, NULL);
 
+			mpz_set_str(a, argv[3], 10);
+			mpz_set_str(b, argv[4], 10);
+
+			char* data = read_char(argv[2]);
+			char* base64_data;
+			long int key_size_bit;
+
+			key_size_bit = strtol(data, &base64_data, 10);
+
+			i = 0;
+			j = 1;
+			while (base64_data[j] != '\0') {
+				base64_data[i++] = base64_data[j++];
+			}
+			base64_data[i] = '\0';
+
+			base64_decoder(base64_data, strlen(base64_data));
+			integer_string_to_binary_string(base64_data);
+			decombined_private_string(base64_data, key_size_bit, n, u);
+
+			elgamal_decrypt_number(n, u, a, b, x);
+
+			gmp_printf("x=%Zd\n", x);
+
+			free(data);
+
+			mpz_clears(n, x, u, a, b, NULL);
 		} else if (argc == 6) {
 			mpz_t n, u, a, b, x;
 
@@ -306,6 +339,110 @@ int main(int argc, char* argv[])
 	case 'm':
 		if (argc == 4) {
 		} else if (argc == 6) {
+			long unsigned int data_size;
+			long unsigned int* ptr = &data_size;
+			int* data = read_with_size(argv[5], ptr);
+
+			mpz_t n, g, y, a, b, x;
+
+			mpz_inits(n, g, y, a, b, x, NULL);
+
+			mpz_set_str(n, argv[2], 10);
+			mpz_set_str(g, argv[3], 10);
+			mpz_set_str(y, argv[4], 10);
+
+			long unsigned int key_size_bit = mpz_sizeinbase(n, 2);
+			long unsigned int block_size_bit = 1 << (key_size_bit-2);
+			long unsigned int block_amount = data_size/(block_size_bit/BYTE_SIZE);
+			long unsigned int block_leftover_byte = data_size %(block_size_bit/BYTE_SIZE);
+			printf("Block size bit %lu\n", block_size_bit);
+			printf("Block amount %lu\n", block_amount);
+			printf("Data size byte %lu\n", data_size);
+			printf("Leftover byte %lu\n", block_leftover_byte);
+
+			char* whole_str = malloc(((block_size_bit+2)*(block_amount+1))*sizeof(char));
+			char* block_str = malloc((block_size_bit+2)*sizeof(char));
+			char* tmp = malloc((BYTE_SIZE+2)*sizeof(char));
+
+			strcpy(whole_str, "");
+			for (int k = 0; k < block_amount; k++) {
+				int i,j ;
+				strcpy(block_str, "");
+				for (j = 0; j < block_size_bit/BYTE_SIZE; j++) {
+					mpz_set_si(x, data[j+(k*block_size_bit/BYTE_SIZE)]);
+					mpz_get_str(tmp, 2, x);
+					for (i = 0; i < BYTE_SIZE-strlen(tmp); i++) {
+						block_str[i+(j*BYTE_SIZE)] = '0';
+					}
+					block_str[i+(j*BYTE_SIZE)] = '\0';
+					strcat(block_str, tmp);
+				}
+				//printf("%s\n", block_str);
+				mpz_set_str(x, block_str, 2);
+				//gmp_printf("%Zd\n", x);
+				elgamal_encrypt_number(n, g, y, a, b, x);
+				//gmp_printf("a=%Zd\nb=%Zd\n", a, b);
+
+				strcpy(block_str, "");
+				mpz_get_str(tmp, 2, a);
+				for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+					block_str[j] = '0';
+				}
+				block_str[j] = '\0';
+				strcat(block_str, tmp);
+
+				mpz_get_str(tmp, 2, b);
+				for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+					block_str[j+key_size_bit] = '0';
+				}
+				block_str[j+key_size_bit] = '\0';
+				strcat(block_str, tmp);
+
+				strcat(whole_str, block_str);
+			}
+
+			// Read the leftover that are cannot build as a block
+			int i, j;
+			for (j = 0; j < data_size-(block_amount*(block_size_bit/BYTE_SIZE)); j++) {
+				mpz_set_si(x, data[j+(block_amount*(block_size_bit/BYTE_SIZE))]);
+				mpz_get_str(tmp, 2, x);
+				for (i = 0; i < BYTE_SIZE-strlen(tmp); i++) {
+					block_str[i+(j*BYTE_SIZE)] = '0';
+				}
+				block_str[i+(j*BYTE_SIZE)] = '\0';
+				strcat(block_str, tmp);
+			}
+
+			mpz_set_str(x, block_str, 2);
+			elgamal_encrypt_number(n, g, y, a, b, x);
+
+			strcpy(block_str, "");
+			mpz_get_str(tmp, 2, a);
+			for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+				block_str[j] = '0';
+			}
+			block_str[j] = '\0';
+			strcat(block_str, tmp);
+
+			mpz_get_str(tmp, 2, b);
+			for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+				block_str[j+key_size_bit] = '0';
+			}
+			block_str[j+key_size_bit] = '\0';
+			strcat(block_str, tmp);
+
+			strcat(whole_str, block_str);
+
+			// Write to file
+			//printf("%s\n", whole_str);
+			write_char(argv[5], whole_str, strlen(whole_str));
+
+			free(data);
+			free(whole_str);
+			free(block_str);
+			free(tmp);
+
+			mpz_clears(n, g, y, a, b, x, NULL);
 		} else {
 			printf("  -m [p] [g] [y] <file>\t\tencrypt file with elgamal\n");
 			printf("  -m <pub> <file>\t\tencrypt file with elgamal\n");
@@ -328,19 +465,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-
-
 // save block
 	//File encrypt/decrypt = P size in bit - 1
 // decrypt block
 // gen safe prime
-// save key to file
-	//private key
-	//  p = 10001011
-	//  u = 00000011
-	//8 base64(1000101100000011)
-	//public key
-	//  p = 10001011
-	//  g = 00110111
-	//  y = 01100011
-	//8 base64(100010110011011101100011)
