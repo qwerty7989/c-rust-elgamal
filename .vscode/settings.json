@@ -7,6 +7,10 @@
 		"modulo.h": "c",
 		"gmp.h": "c",
 		"elgamal.h": "c",
-		"text.h": "c"
+		"text.h": "c",
+		"array": "c",
+		"string": "c",
+		"string_view": "c",
+		"ctype.h": "c"
 	}
 }

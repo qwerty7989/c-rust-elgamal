@@ -5,4 +5,5 @@
 #define BYTE_SIZE 8
 
 int* read(char* filename);
+char* read_char(char* filename);
 void write(char* filename, char* data, int size);

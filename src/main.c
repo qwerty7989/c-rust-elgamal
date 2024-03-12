@@ -16,11 +16,15 @@ int main(int argc, char* argv[])
 		printf("  -p [number] [tries]\t\toutput yes if number is probably prime, otherwise no\n");
 		printf("  -o <file>\t\t\tReading the file data, return data if readable\n");
 		printf("  -k [number]\t\t\tgenerate key for elgamal\n");
-		printf("  -k [number] <file> <key_file>\tgenerate key for elgamal and save to file\n");
-		printf("  -a [number] [p] [g] [y]\tencrypt number with elgamal\n");
-		printf("  -b [number] [u]\t\tdecrypt number with elgamal\n");
-		printf("  -m <file> [p] [g] [y]\tencrypt file with elgamal\n");
-		printf("  -n <file> [u]\t\tdecrypt file with elgamal\n");
+		printf("  -k [number] <pub> <key_file>\tgenerate key for elgamal and save to file\n");
+		printf("  -a [p] [g] [y] [number]\tencrypt number with elgamal\n");
+		printf("  -a <pub> [number]\tencrypt number with elgamal\n");
+		printf("  -b [p] [u] [a] [b]\t\tdecrypt number with elgamal\n");
+		printf("  -b <key_file> [a] [b]\t\tdecrypt number with elgamal\n");
+		printf("  -m [p] [g] [y] <file>\t\tencrypt file with elgamal\n");
+		printf("  -m <pub> <file>\t\tencrypt file with elgamal\n");
+		printf("  -n [p] [u] <file>\t\tdecrypt file with elgamal\n");
+		printf("  -n <key_file> <file>\t\tdecrypt file with elgamal\n");
 		return 0;
 	}
 
@@ -193,7 +197,7 @@ int main(int argc, char* argv[])
 			//n, g, y
 			combined_public_string(res_pub, n, g, y);
 			binary_string_to_integer_string(res_pub);
-			base64Encoder(res_pub, strlen(res_pub));
+			base64_encoder(res_pub, strlen(res_pub));
 
 			sprintf(pub_str, "%lu", key_size_bit);
 			strcat(pub_str, " ");
@@ -203,7 +207,7 @@ int main(int argc, char* argv[])
 			//u
 			combined_private_string(res_pri, n, u);
 			binary_string_to_integer_string(res_pri);
-			base64Encoder(res_pri, strlen(res_pri));
+			base64_encoder(res_pri, strlen(res_pri));
 
 			sprintf(pri_str, "%lu", key_size_bit);
 			strcat(pri_str, " ");
@@ -219,32 +223,102 @@ int main(int argc, char* argv[])
 
 		} else {
 			printf("  -k [number]\t\t\tgenerate key for elgamal\n");
-			printf("  -k [number] <file> <key_file>\tgenerate key for elgamal and save to file\n");
+			printf("  -k [number] <pub> <key_file>\tgenerate key for elgamal and save to file\n");
 			printf("crel: please enter number or both number and file to save\n");
 		}
 		break;
 	case 'a':
-		if (argc == 3) {
+		if (argc == 4) {
+			int i, j;
+			mpz_t x, g, y, k;
+			mpz_inits(x, g, y, k, NULL);
+
+			char* data = read_char(argv[2]);
+			char* key_size_bit = malloc(MAX_SIZE*sizeof(char));
+
+			i = 0;
+			while (!isspace(data[i])) {
+				key_size_bit[i] = data[i];
+				i++;
+			}
+			key_size_bit[i++] = '\0';
+
+			j = 0;
+			while (data[i] != '\0') {
+				data[j++] = data[i++];
+			}
+			data[j] = '\0';
+
+			base64_decoder(data, strlen(data));
+
+			integer_string_to_binary_string(data);
+			printf("key %s data %s\n", key_size_bit, data);
+			decombined_public_string(data, key_size_bit, g, y, k);
+
+			//mpz_set_str(x, argv[3], 10);
+
+		} else if (argc == 6) {
+			mpz_t n, g, y, a, b, x;
+
+			mpz_inits(n, g, y, a, b, x, NULL);
+
+			mpz_set_str(n, argv[2], 10);
+			mpz_set_str(g, argv[3], 10);
+			mpz_set_str(y, argv[4], 10);
+			mpz_set_str(x, argv[5], 10);
+
+			elgamal_encrypt_number(n, g, y, a, b, x);
+
+			gmp_printf("a=%Zd\nb=%Zd\n", a, b);
+
+			mpz_clears(n, g, y, a, b, x, NULL);
 		} else {
-			printf("  -a [number] [p] [g] [y]\tencrypt number with elgamal\n");
+			printf("  -a [p] [g] [y] [number]\tencrypt number with elgamal\n");
+			printf("  -a <pub> [number]\tencrypt number with elgamal\n");
+			printf("crel: please enter all required parameter\n");
 		}
 		break;
 	case 'b':
-		if (argc == 3) {
+		if (argc == 5) {
+
+		} else if (argc == 6) {
+			mpz_t n, u, a, b, x;
+
+			mpz_inits(n, u, a, b, x, NULL);
+
+			mpz_set_str(n, argv[2], 10);
+			mpz_set_str(u, argv[3], 10);
+			mpz_set_str(a, argv[4], 10);
+			mpz_set_str(b, argv[5], 10);
+
+			elgamal_decrypt_number(n, u, a, b, x);
+
+			gmp_printf("x=%Zd\n", x);
+
+			mpz_clears(n, u, a, b, x, NULL);
+
 		} else {
-			printf("  -b [number] [u]\t\tdecrypt number with elgamal\n");
+			printf("  -b [p] [u] [a] [b]\t\tdecrypt number with elgamal\n");
+			printf("  -b <key_file> [a] [b]\t\tdecrypt number with elgamal\n");
+			printf("crel: please enter all required parameter\n");
 		}
 		break;
 	case 'm':
-		if (argc == 3) {
+		if (argc == 4) {
+		} else if (argc == 6) {
 		} else {
-			printf("  -m <file> [p] [g] [y]\tencrypt file with elgamal\n");
+			printf("  -m [p] [g] [y] <file>\t\tencrypt file with elgamal\n");
+			printf("  -m <pub> <file>\t\tencrypt file with elgamal\n");
+			printf("crel: please enter filename and all required parameter\n");
 		}
 		break;
 	case 'n':
-		if (argc == 3) {
+		if (argc == 4) {
+		} else if (argc == 5) {
 		} else {
-			printf("  -n <file> [u]\t\tdecrypt file with elgamal\n");
+			printf("  -n [p] [u] <file>\t\tdecrypt file with elgamal\n");
+			printf("  -n <key_file> <file>\t\tdecrypt file with elgamal\n");
+			printf("crel: please enter filename and all required parameter\n");
 		}
 	default:
 		printf("crel: invalid option\n");

@@ -1,5 +1,17 @@
 #include "text.h"
 
+void integer_string_to_binary_string(char* str)
+{
+    mpz_t num;
+
+	mpz_init(num);
+
+    mpz_set_str(num, str, 10);
+    mpz_get_str(str, 2, num);
+
+	mpz_clear(num);
+}
+
 void binary_string_to_integer_string(char* str)
 {
     mpz_t num;
@@ -61,16 +73,43 @@ void combined_public_string(char* str, mpz_t n, mpz_t g, mpz_t y)
     free(tmp);
 }
 
+void decombined_public_string(char* str, char* key_size_bit, mpz_t n, mpz_t g, mpz_t y)
+{
+    int i;
+	long unsigned int ksb = strtol(key_size_bit, NULL, 10);
+    printf("%d\n", key_size_bit);
+	//char* tmp = malloc((key_size_bit+2)*sizeof(char));
+
+    //strcpy(str,"");
+
+	//mpz_get_str(tmp, 2, n);
+    //strcat(str, tmp);
+
+    //mpz_get_str(tmp, 2, g);
+	//for (i = 0; i < key_size_bit-strlen(tmp); i++) {
+	//	str[key_size_bit+i] = '0';
+	//}
+    //str[key_size_bit+i] = '\0';
+    //strcat(str, tmp);
+
+    //mpz_get_str(tmp, 2, y);
+	//for (i = 0; i < key_size_bit-strlen(tmp); i++) {
+	//	str[(key_size_bit*2)+i] = '0';
+	//}
+    //str[(key_size_bit*2)+i] = '\0';
+    //strcat(str, tmp);
+
+    //free(tmp);
+}
+
 /**
  * https://www.geeksforgeeks.org/encode-ascii-string-base-64-format/
 */
-void base64Encoder(char* input_str, int len_str)
+void base64_encoder(char* input_str, int len_str)
 {
-    // Character set of base64 encoding scheme
     char char_set[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    // Resultant string
-    char *res_str = (char *) malloc(1000 * sizeof(char));
+    char* res_str;
+    res_str = malloc(MAX_LENGTH*sizeof(char));
 
     int index, no_of_bits = 0, padding = 0, val = 0, count = 0, temp;
     int i, j, k = 0;
@@ -117,4 +156,53 @@ void base64Encoder(char* input_str, int len_str)
     strcpy(input_str, res_str);
 
     free(res_str);
+}
+
+/**
+ * https://www.geeksforgeeks.org/decode-encoded-base-64-string-ascii-string/
+*/
+void base64_decoder(char* encoded, int len_str)
+{
+    char char_set[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    char* decoded_string = malloc(MAX_LENGTH*sizeof(char));
+
+    int i, j, k = 0;
+    int num = 0;
+    int count_bits = 0;
+
+    for (i = 0; i < len_str; i += 4) {
+        num = 0, count_bits = 0;
+        for (j = 0; j < 4; j++) {
+            if (encoded[i + j] != '=') {
+                num = num << 6;
+                count_bits += 6;
+            }
+
+            if (encoded[i + j] >= 'A' && encoded[i + j] <= 'Z')
+                num = num | (encoded[i + j] - 'A');
+            else if (encoded[i + j] >= 'a' && encoded[i + j] <= 'z')
+                num = num | (encoded[i + j] - 'a' + 26);
+            else if (encoded[i + j] >= '0' && encoded[i + j] <= '9')
+                num = num | (encoded[i + j] - '0' + 52);
+            else if (encoded[i + j] == '+')
+                num = num | 62;
+            else if (encoded[i + j] == '/')
+                num = num | 63;
+            else {
+                num = num >> 2;
+                count_bits -= 2;
+            }
+        }
+
+        while (count_bits != 0) {
+            count_bits -= 8;
+            decoded_string[k++] = (num >> count_bits) & 255;
+        }
+    }
+
+    decoded_string[k] = '\0';
+
+    strcpy(encoded, decoded_string);
+
+    free(decoded_string);
 }

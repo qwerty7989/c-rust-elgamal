@@ -28,6 +28,32 @@ int* read(char* filename)
 	return data;
 }
 
+char* read_char(char* filename)
+{
+	FILE *fptr;
+
+	fptr = fopen(filename, "r");
+
+	if (NULL == fptr) {
+		printf("file can't be opened \n");
+		return 0;
+	}
+
+	int i, ch;
+	char* data;
+
+	data = malloc(MAX_SIZE*sizeof(char));
+	i = 0;
+	do {
+		ch = fgetc(fptr);
+		data[i++] = ch;
+	} while (ch != EOF && i < MAX_SIZE);
+	data[i-1] = '\0';
+
+	fclose(fptr);
+	return data;
+}
+
 void write(char* filename, char* data, int size)
 {
 	FILE *fptr;
