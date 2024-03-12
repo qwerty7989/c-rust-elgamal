@@ -5,6 +5,8 @@
 		"math.h": "c",
 		"file_reader.h": "c",
 		"modulo.h": "c",
-		"gmp.h": "c"
+		"gmp.h": "c",
+		"elgamal.h": "c",
+		"text.h": "c"
 	}
 }

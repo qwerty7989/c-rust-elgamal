@@ -1,7 +1,7 @@
 #include "prime.h"
 #include "gcd.h"
 #include "modulo.h"
-#include "file_reader.h"
+#include "file.h"
 
 /**
  * https://www.youtube.com/watch?v=zmhUlVck3J0
@@ -65,7 +65,7 @@ int check_prime_lehnman(mpz_t n, int t)
 	}
 
 	// free variable from memory
-	mpz_clears(a, e, x, tmp_a, tmp_e, tmp_n, NULL);
+	mpz_clears(a, e, x, tmp_a, tmp_e, tmp_n, rstate, NULL);
 
 	return 1;
 }

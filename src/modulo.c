@@ -18,6 +18,8 @@ void inverse_modulo(mpz_t a, mpz_t m, mpz_t x)
 	while (mpz_cmp_si(x, 0) < 0)
 		mpz_add(x, x, m); // x = x + m;
 
+	mpz_mod(x, x, m);
+
 	mpz_clear(tmp_m);
 
 	// return x;

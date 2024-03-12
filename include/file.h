@@ -5,3 +5,4 @@
 #define BYTE_SIZE 8
 
 int* read(char* filename);
+void write(char* filename, char* data, int size);
