@@ -377,11 +377,11 @@ int main(int argc, char* argv[])
 					block_str[i+(j*BYTE_SIZE)] = '\0';
 					strcat(block_str, tmp);
 				}
-				//printf("%s\n", block_str);
+				if (k == 0) printf("%s\n", block_str);
 				mpz_set_str(x, block_str, 2);
 				//gmp_printf("%Zd\n", x);
 				elgamal_encrypt_number(n, g, y, a, b, x);
-				//gmp_printf("a=%Zd\nb=%Zd\n", a, b);
+				if (k == 0) gmp_printf("a=%Zd\nb=%Zd\n", a, b);
 
 				strcpy(block_str, "");
 				mpz_get_str(tmp, 2, a);
@@ -452,11 +452,66 @@ int main(int argc, char* argv[])
 	case 'n':
 		if (argc == 4) {
 		} else if (argc == 5) {
+			long unsigned int data_size;
+			long unsigned int* ptr = &data_size;
+			int* data = read_with_size(argv[4], ptr);
+
+			mpz_t n, u, a, b, x;
+
+			mpz_inits(n, u, a, b, x, NULL);
+
+			mpz_set_str(n, argv[2], 10);
+			mpz_set_str(u, argv[3], 10);
+
+			long unsigned int key_size_bit = mpz_sizeinbase(n, 2);
+			long unsigned int block_size_bit = 1 << (key_size_bit-2);
+			long unsigned int block_amount = data_size/(block_size_bit/BYTE_SIZE);
+			long unsigned int block_leftover_byte = data_size %(block_size_bit/BYTE_SIZE);
+			printf("Key bit %lu\n", key_size_bit);
+			printf("Block size bit %lu\n", block_size_bit);
+			printf("Block amount %lu\n", block_amount);
+			printf("Data size byte %lu\n", data_size);
+			printf("Leftover byte %lu\n", block_leftover_byte);
+
+			char* whole_str = malloc(((block_size_bit+2)*(block_amount+1))*sizeof(char));
+			char* block_str = malloc((block_size_bit+2)*sizeof(char));
+			char* ab_str = malloc((key_size_bit+2)*sizeof(char));
+			char* tmp = malloc((BYTE_SIZE+2)*sizeof(char));
+
+			int i, j, k;
+			//for (k = 0; k < data_size/(key_size_bit*2); k++) {
+				// read a
+				strcpy(ab_str, "");
+				for (j = 0; j < key_size_bit; j++) {
+					ab_str[j] = data[j];
+				}
+				mpz_set_str(a, ab_str, 2);
+
+				// read b
+				strcpy(ab_str, "");
+				for (j = 0; j < key_size_bit; j++) {
+					ab_str[j] = data[j+key_size_bit];
+				}
+				mpz_set_str(b, ab_str, 2);
+
+				elgamal_decrypt_number(n, u, a, b, x);
+
+				mpz_get_str(ab_str, 2, x);
+				printf("x %s\n", ab_str);
+			//}
+
+			free(data);
+			free(whole_str);
+			free(block_str);
+			free(tmp);
+
+			mpz_clears(n, u, a, b, x, NULL);
 		} else {
 			printf("  -n [p] [u] <file>\t\tdecrypt file with elgamal\n");
 			printf("  -n <key_file> <file>\t\tdecrypt file with elgamal\n");
 			printf("crel: please enter filename and all required parameter\n");
 		}
+		break;
 	default:
 		printf("crel: invalid option\n");
 		break;
