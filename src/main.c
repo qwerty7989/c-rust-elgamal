@@ -352,95 +352,97 @@ int main(int argc, char* argv[])
 			mpz_set_str(y, argv[4], 10);
 
 			long unsigned int key_size_bit = mpz_sizeinbase(n, 2);
-			long unsigned int block_size_bit = 1 << (key_size_bit-2);
-			long unsigned int block_amount = data_size/(block_size_bit/BYTE_SIZE);
-			long unsigned int block_leftover_byte = data_size %(block_size_bit/BYTE_SIZE);
+			long unsigned int block_size_bit = key_size_bit / BYTE_SIZE;
+			block_size_bit = block_size_bit * BYTE_SIZE;
+
+			long unsigned int block_amount = data_size/ block_size_bit;
+			long unsigned int block_leftover_byte = data_size % block_size_bit;
 			printf("Block size bit %lu\n", block_size_bit);
 			printf("Block amount %lu\n", block_amount);
 			printf("Data size byte %lu\n", data_size);
 			printf("Leftover byte %lu\n", block_leftover_byte);
 
-			char* whole_str = malloc(((block_size_bit+2)*(block_amount+1))*sizeof(char));
-			char* block_str = malloc((block_size_bit+2)*sizeof(char));
-			char* tmp = malloc((BYTE_SIZE+2)*sizeof(char));
+			//char* whole_str = malloc(((block_size_bit+2)*(block_amount+1))*sizeof(char));
+			//char* block_str = malloc((block_size_bit+2)*sizeof(char));
+			//char* tmp = malloc((BYTE_SIZE+2)*sizeof(char));
 
-			strcpy(whole_str, "");
-			for (int k = 0; k < block_amount; k++) {
-				int i,j ;
-				strcpy(block_str, "");
-				for (j = 0; j < block_size_bit/BYTE_SIZE; j++) {
-					mpz_set_si(x, data[j+(k*block_size_bit/BYTE_SIZE)]);
-					mpz_get_str(tmp, 2, x);
-					for (i = 0; i < BYTE_SIZE-strlen(tmp); i++) {
-						block_str[i+(j*BYTE_SIZE)] = '0';
-					}
-					block_str[i+(j*BYTE_SIZE)] = '\0';
-					strcat(block_str, tmp);
-				}
-				if (k == 0) printf("%s\n", block_str);
-				mpz_set_str(x, block_str, 2);
-				//gmp_printf("%Zd\n", x);
-				elgamal_encrypt_number(n, g, y, a, b, x);
-				if (k == 0) gmp_printf("a=%Zd\nb=%Zd\n", a, b);
+			//strcpy(whole_str, "");
+			//for (int k = 0; k < block_amount; k++) {
+			//	int i,j ;
+			//	strcpy(block_str, "");
+			//	for (j = 0; j < block_size_bit/BYTE_SIZE; j++) {
+			//		mpz_set_si(x, data[j+(k*block_size_bit/BYTE_SIZE)]);
+			//		mpz_get_str(tmp, 2, x);
+			//		for (i = 0; i < BYTE_SIZE-strlen(tmp); i++) {
+			//			block_str[i+(j*BYTE_SIZE)] = '0';
+			//		}
+			//		block_str[i+(j*BYTE_SIZE)] = '\0';
+			//		strcat(block_str, tmp);
+			//	}
+			//	if (k == 0) printf("%s\n", block_str);
+			//	mpz_set_str(x, block_str, 2);
+			//	//gmp_printf("%Zd\n", x);
+			//	elgamal_encrypt_number(n, g, y, a, b, x);
+			//	if (k == 0) gmp_printf("a=%Zd\nb=%Zd\n", a, b);
 
-				strcpy(block_str, "");
-				mpz_get_str(tmp, 2, a);
-				for (j = 0; j < key_size_bit-strlen(tmp); j++) {
-					block_str[j] = '0';
-				}
-				block_str[j] = '\0';
-				strcat(block_str, tmp);
+			//	strcpy(block_str, "");
+			//	mpz_get_str(tmp, 2, a);
+			//	for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+			//		block_str[j] = '0';
+			//	}
+			//	block_str[j] = '\0';
+			//	strcat(block_str, tmp);
 
-				mpz_get_str(tmp, 2, b);
-				for (j = 0; j < key_size_bit-strlen(tmp); j++) {
-					block_str[j+key_size_bit] = '0';
-				}
-				block_str[j+key_size_bit] = '\0';
-				strcat(block_str, tmp);
+			//	mpz_get_str(tmp, 2, b);
+			//	for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+			//		block_str[j+key_size_bit] = '0';
+			//	}
+			//	block_str[j+key_size_bit] = '\0';
+			//	strcat(block_str, tmp);
 
-				strcat(whole_str, block_str);
-			}
+			//	strcat(whole_str, block_str);
+			//}
 
-			// Read the leftover that are cannot build as a block
-			int i, j;
-			for (j = 0; j < data_size-(block_amount*(block_size_bit/BYTE_SIZE)); j++) {
-				mpz_set_si(x, data[j+(block_amount*(block_size_bit/BYTE_SIZE))]);
-				mpz_get_str(tmp, 2, x);
-				for (i = 0; i < BYTE_SIZE-strlen(tmp); i++) {
-					block_str[i+(j*BYTE_SIZE)] = '0';
-				}
-				block_str[i+(j*BYTE_SIZE)] = '\0';
-				strcat(block_str, tmp);
-			}
+			//// Read the leftover that are cannot build as a block
+			//int i, j;
+			//for (j = 0; j < data_size-(block_amount*(block_size_bit/BYTE_SIZE)); j++) {
+			//	mpz_set_si(x, data[j+(block_amount*(block_size_bit/BYTE_SIZE))]);
+			//	mpz_get_str(tmp, 2, x);
+			//	for (i = 0; i < BYTE_SIZE-strlen(tmp); i++) {
+			//		block_str[i+(j*BYTE_SIZE)] = '0';
+			//	}
+			//	block_str[i+(j*BYTE_SIZE)] = '\0';
+			//	strcat(block_str, tmp);
+			//}
 
-			mpz_set_str(x, block_str, 2);
-			elgamal_encrypt_number(n, g, y, a, b, x);
+			//mpz_set_str(x, block_str, 2);
+			//elgamal_encrypt_number(n, g, y, a, b, x);
 
-			strcpy(block_str, "");
-			mpz_get_str(tmp, 2, a);
-			for (j = 0; j < key_size_bit-strlen(tmp); j++) {
-				block_str[j] = '0';
-			}
-			block_str[j] = '\0';
-			strcat(block_str, tmp);
+			//strcpy(block_str, "");
+			//mpz_get_str(tmp, 2, a);
+			//for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+			//	block_str[j] = '0';
+			//}
+			//block_str[j] = '\0';
+			//strcat(block_str, tmp);
 
-			mpz_get_str(tmp, 2, b);
-			for (j = 0; j < key_size_bit-strlen(tmp); j++) {
-				block_str[j+key_size_bit] = '0';
-			}
-			block_str[j+key_size_bit] = '\0';
-			strcat(block_str, tmp);
+			//mpz_get_str(tmp, 2, b);
+			//for (j = 0; j < key_size_bit-strlen(tmp); j++) {
+			//	block_str[j+key_size_bit] = '0';
+			//}
+			//block_str[j+key_size_bit] = '\0';
+			//strcat(block_str, tmp);
 
-			strcat(whole_str, block_str);
+			//strcat(whole_str, block_str);
 
-			// Write to file
-			//printf("%s\n", whole_str);
-			write_char(argv[5], whole_str, strlen(whole_str));
+			//// Write to file
+			////printf("%s\n", whole_str);
+			//write_char(argv[5], whole_str, strlen(whole_str));
 
 			free(data);
-			free(whole_str);
-			free(block_str);
-			free(tmp);
+			//free(whole_str);
+			//free(block_str);
+			//free(tmp);
 
 			mpz_clears(n, g, y, a, b, x, NULL);
 		} else {
