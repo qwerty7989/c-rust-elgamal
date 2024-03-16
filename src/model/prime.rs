@@ -1,28 +1,11 @@
+use self::math::modular;
+
 use super::*;
 
 use num_bigint::{BigInt, RandBigInt};
 use std::fs::File;
 use std::io::Read;
 
-/// Implements the Lehmann primality test, a probabilistic test for determining if a number is prime.
-///
-/// The Lehmann test is based on Fermat's Little Theorem and is more reliable than simpler
-/// probabilistic tests like the Miller-Rabin test.  However, it's still probabilistic and can
-/// produce false positives (incorrectly identifying a composite number as prime), albeit with
-/// very low likelihood.
-///
-/// # Arguments
-///
-/// * `n`: The integer to test for primality.
-///
-/// # Returns
-///
-/// `true` if 'n' is likely a prime number, `false` otherwise.
-///
-/// # Notes
-///
-///  * This test has a very low probability of false positives, but they can still occur.
-///  * For absolute certainty about primality, use a deterministic primality test.
 fn lehmann_test(n: &BigInt) -> bool {
     let mut rng = rand::thread_rng();
     let mut rand_numbers: Vec<BigInt> = Vec::new();
@@ -50,22 +33,6 @@ fn lehmann_test(n: &BigInt) -> bool {
     true
 }
 
-/// Determines if an integer is prime using a combination of deterministic and probabilistic tests.
-///
-/// This function employs several strategies to efficiently and accurately determine primality:
-///
-/// * **Small Number Checks:** Quickly eliminates small non-primes using divisibility checks.
-/// * **Optimized Trial Division:**  Checks divisibility up to the square root of 'n', with an
-///    optimization for divisors that are multiples of 6 plus or minus 1.
-/// * **Lehmann Test:** For larger numbers, applies the probabilistic Lehmann primality test.
-///
-/// # Arguments
-///
-/// * `n`: The integer to test for primality.
-///
-/// # Returns
-///
-/// `true` if 'n' is a prime number, `false` otherwise.
 pub fn is_prime(n: &BigInt) -> bool {
     if n.sign() == num_bigint::Sign::Minus {
         return false;
@@ -105,20 +72,6 @@ pub fn is_prime(n: &BigInt) -> bool {
     }
 }
 
-/// Reads the specified number of bits from a binary file and returns them as an integer.
-///
-/// The function efficiently reads bits from a file, storing them in an integer representation.
-/// It handles bit-level operations for extracting and shifting the bits.
-///
-/// # Arguments
-///
-/// * `filename`: The path to the binary file.
-/// * `n`: The number of bits to read from the file.
-///
-/// # Returns
-///
-/// An integer (`BigInt`) representing the first 'n' bits read from the file.
-
 fn read_n_bits_file(filename: &str, n: usize) -> BigInt {
     let mut file: File = File::open(filename).unwrap();
     let mut binary_string: Vec<char> = Vec::new();
@@ -144,39 +97,31 @@ fn read_n_bits_file(filename: &str, n: usize) -> BigInt {
     result
 }
 
-#[allow(dead_code)]
-/// Generates a prime number by reading bits from a binary file and applying primality testing.
-///
-/// The function works as follows:
-/// 1. **Read bits:** Reads a specified number of bits from the file.
-/// 2. **Ensure oddness:** Sets the least significant bit to 1, guaranteeing an odd number.
-/// 3. **Establish upper bound:** Calculates an upper bound for efficient searching.
-/// 4. **Primality testing and incrementing:**  Iterates through odd numbers, testing for primality  
-///    using `is_prime` until a prime number is found.
-///
-/// # Arguments
-///
-/// * `n`: The number of bits to read from the file (determines the size of the prime).
-/// * `filename`: The path to the binary file containing random bits.
-///
-/// # Returns
-///
-/// A prime number generated from the bits in the file.
 pub fn gen_prime_from_file(n: usize, filename: &str) -> BigInt {
-    let mut num: BigInt = read_n_bits_file(filename, n - 1);
-    num = (num << 1) | &BigInt::from(1); // make last bit 1
+    let max = BigInt::from(1) << n;
+    let min = BigInt::from(1) << (n - 1);
+    let mut num: BigInt = read_n_bits_file(filename, n);
+    num = num | &BigInt::from(1); // make last bit 1
     while !is_prime(&num) {
-        num += BigInt::from(2); // will add on bit 10 to make last two bits 1
+        if num < min {
+            num += min.clone();
+        }
+        num = modular(&(num + BigInt::from(2)), &max);
     }
     return num;
 }
 
-#[allow(dead_code)]
 pub fn gen_safe_prime_from_file(n: usize, filename: &str) -> BigInt {
-    let mut num: BigInt = read_n_bits_file(filename, n - 2);
-    num = (num << 2) | &BigInt::from(3); // make last bit 11
+    let max = BigInt::from(1) << n;
+    let min = BigInt::from(1) << (n - 1);
+    let mut num: BigInt = read_n_bits_file(filename, n);
+
+    num = num | &BigInt::from(3); // make last bit 11
     while !is_safe_prime(&num) {
-        num += BigInt::from(4); // will add on bit 100 to make last two bits 11
+        if num < min {
+            num += min.clone();
+        }
+        num = modular(&(num + BigInt::from(4)), &max);
     }
     return num;
 }

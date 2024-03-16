@@ -59,21 +59,17 @@ pub fn extended_gcd(n1: &BigInt, n2: &BigInt) -> (BigInt, BigInt) {
 /// assert_eq!(result, 8); // (5 ^ 3) % 13 = 125 % 13 = 8 
 /// ```
 pub fn fast_exponential(a: &BigInt, b: &BigInt, m: &BigInt) -> BigInt {
-    if b == &BigInt::from(0) {
-        return BigInt::from(1);
+    let mut res = BigInt::from(1);
+    let mut a_clone = a.clone();
+    let mut b_clone = b.clone();
+    while b_clone > BigInt::from(0) {
+        if &b_clone & BigInt::from(1) == BigInt::from(1) {
+            res = (res * &a_clone) % m;
+        }
+        b_clone = b_clone >> 1;
+        a_clone = (&a_clone * &a_clone) % m;
     }
-    if b == &BigInt::from(1) {
-        modular(&a, &m)
-    } else if modular(b, &BigInt::from(2)) == BigInt::from(0) {
-        let x = fast_exponential(&a, &(b / 2), &m);
-        let x_clone = x.clone();
-        modular(&(x_clone * x), &m)
-    } else {
-        let x = fast_exponential(&a, &(b - 1), &m);
-        let a_clone = a.clone();
-        let x_clone = x.clone();
-        modular(&(a_clone * x_clone), &m)
-    }
+    return res;
 }
 /// Calculates the modular multiplicative inverse of an integer 'a' modulo 'p'.
 ///
@@ -126,10 +122,15 @@ pub fn find_mod_invert( a: &BigInt, p: &BigInt) -> BigInt {
 /// assert_eq!(result, 12);
 /// ```
 pub fn gcd(a: &BigInt, n: &BigInt) -> BigInt {
-    if n == &BigInt::from(0) {
-        return a.clone();
+    let mut a_clone = a.clone();
+    let mut n_clone = n.clone();
+    while n_clone != BigInt::from(0) {
+        let temp = n_clone.clone();
+        n_clone = a_clone.clone() % n_clone;
+        a_clone = temp;
     }
-    return gcd(n, &modular(&a, &n));
+
+    return a_clone;
 }
 
 /// Calculates the modulo of an integer while ensuring the result is within the valid range.
