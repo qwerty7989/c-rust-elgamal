@@ -185,7 +185,6 @@ void base64_encoder(char* input_str, int len_str)
 */
 void base64_decoder(char* encoded, int len_str)
 {
-    char char_set[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     char* decoded_string = malloc(MAX_LENGTH*sizeof(char));
 
     int i, j, k = 0;
